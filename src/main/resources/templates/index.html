@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>WebSocket Chat Application in Java</title>
+</head>
+<body>
+<script type="text/javascript">
+  var uri = "ws://localhost:80/chat/";
+  var websocket;
+  var output;
+  var textID
+
+  var userId = prompt("what's your name?");
+
+  var sendMessageObj = {};
+
+  function init() {
+    output = document.getElementById("output");
+    textID = document.getElementById("textID");
+  }
+
+  function connect() {
+    if (!websocket) {
+      websocket = new WebSocket(uri + userId);
+      websocket.onopen = function (evt) {
+        writeToScreen("채팅을 시작합니다.")
+      };
+      websocket.onmessage = function (evt) {
+        var chatUser = JSON.parse(evt.data)
+        writeToScreen(chatUser.userId + " : " + chatUser.message);
+
+      };
+      websocket.onerror = function (evt) {
+        onError(evt)
+      };
+    }
+  }
+
+  function disconnect() {
+    if (!websocket) websocket.close();
+  }
+
+  function send_message() {
+    var message = textID.value;
+    sendMessageObj.userId = userId;
+    sendMessageObj.message = message;
+    websocket.send(JSON.stringify(sendMessageObj));
+  }
+
+
+  function onError(evt) {
+    writeToScreen('ERROR: ' + evt.data);
+  }
+
+  function writeToScreen(message) {
+    var pre = document.createElement("p");
+    pre.style.wordWrap = "break-word";
+    pre.innerHTML = message;
+    output.appendChild(pre);
+  }
+  window.addEventListener("load", init, false);
+</script>
+<h1 style="text-align: center;">Hello World WebSocket Client</h1><br>
+<div style="text-align: center;">
+  <form action="">
+    <input onclick="connect()" value="Connect" type="button">
+    <input onclick="send_message()" value="Send" type="button">
+    <input id="textID" name="message" type="text" placeholder ="채팅을 시작해보세요!"><br>
+  </form>
+</div>
+<div id="output"></div>
+</body>
+</html>
